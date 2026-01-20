@@ -16,11 +16,16 @@ dist/
 build/
 .next/
 out/
-*.js
-*.d.ts
-*.js.map
-*.d.ts.map
-!*.config.js
+# TypeScript compiled files in src and frontend (exclude root config files)
+src/**/*.js
+src/**/*.d.ts
+src/**/*.js.map
+src/**/*.d.ts.map
+frontend/**/*.js
+frontend/**/*.d.ts
+frontend/**/*.js.map
+frontend/**/*.d.ts.map
+!frontend/next.config.js
 
 # Prisma
 /prisma/migrations/
