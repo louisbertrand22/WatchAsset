@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment variables (CRUCIAL : pour protéger tes secrets)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Prisma
+/prisma/migrations/
+# On garde le schéma mais on ignore le binaire du moteur
+query-engine-*
+migration-engine-*
+introspection-engine-*
+
+# Debug & Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+logs/
+*.log
+
+# OS Metadata (fichiers systèmes)
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE Settings (VS Code / WebStorm)
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+coverage/
+.nyc_output
+
+# Docker
+.docker/

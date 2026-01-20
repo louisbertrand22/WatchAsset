@@ -1,0 +1,41 @@
+// WatchAsset/prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Watch {
+  id           String   @id @default(uuid())
+  brand        String   // Rolex, Patek, etc.
+  model        String   // Submariner, Nautilus
+  reference    String   @unique // ex: 116610LN
+  imageUrl     String?
+  createdAt    DateTime @default(now())
+  
+  prices       PriceHistory[]
+  userWatches  UserWatch[]
+}
+
+model PriceHistory {
+  id        String   @id @default(uuid())
+  watchId   String
+  price     Float    // Prix en EUR
+  source    String   // Chrono24, eBay, etc.
+  date      DateTime @default(now())
+  
+  watch     Watch    @relation(fields: [watchId], references: [id])
+}
+
+model UserWatch {
+  id        String   @id @default(uuid())
+  userId    String   // ID provenant de MySSO (sub dans le JWT)
+  watchId   String
+  purchasePrice Float? // Prix payé par l'utilisateur
+  purchaseDate  DateTime?
+
+  watch     Watch    @relation(fields: [watchId], references: [id])
+}
