@@ -1,9 +1,13 @@
 import axios from 'axios';
 
-const SSO_BASE_URL = 'http://localhost:3000';
-const CLIENT_ID = 'watch-asset-app';
-const CLIENT_SECRET = 'votre_secret_genere'; // À mettre dans .env
-const REDIRECT_URI = 'http://localhost:3001/auth/callback';
+const SSO_BASE_URL = process.env.SSO_BASE_URL || 'http://localhost:3000';
+const CLIENT_ID = process.env.SSO_CLIENT_ID || 'watch-asset-app';
+const CLIENT_SECRET = process.env.SSO_CLIENT_SECRET;
+const REDIRECT_URI = process.env.SSO_REDIRECT_URI || 'http://localhost:3001/auth/callback';
+
+if (!CLIENT_SECRET) {
+  console.warn('⚠️  SSO_CLIENT_SECRET is not set in environment variables. Authentication will fail.');
+}
 
 export const exchangeCodeForTokens = async (code: string, codeVerifier: string) => {
   try {
