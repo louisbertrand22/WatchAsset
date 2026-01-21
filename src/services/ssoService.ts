@@ -5,11 +5,11 @@ const CLIENT_ID = process.env.SSO_CLIENT_ID || 'watch-asset-app';
 const CLIENT_SECRET = process.env.SSO_CLIENT_SECRET;
 const REDIRECT_URI = process.env.SSO_REDIRECT_URI || 'http://localhost:3001/auth/callback';
 
-if (!CLIENT_SECRET) {
-  console.warn('⚠️  SSO_CLIENT_SECRET is not set in environment variables. Authentication will fail.');
-}
-
 export const exchangeCodeForTokens = async (code: string, codeVerifier: string) => {
+  if (!CLIENT_SECRET) {
+    throw new Error('SSO_CLIENT_SECRET is not configured. Please set it in your .env file.');
+  }
+  
   try {
     const response = await axios.post(`${SSO_BASE_URL}/token`, {
       grant_type: 'authorization_code',
