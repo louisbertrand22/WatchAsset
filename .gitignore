@@ -17,6 +17,21 @@ build/
 .next/
 out/
 
+# TypeScript build artifacts in src/
+src/**/*.js
+src/**/*.d.ts
+src/**/*.js.map
+src/**/*.d.ts.map
+
+# TypeScript build artifacts in frontend/
+frontend/**/*.js
+frontend/**/*.d.ts
+frontend/**/*.js.map
+frontend/**/*.d.ts.map
+!frontend/next.config.ts
+!frontend/eslint.config.mjs
+!frontend/postcss.config.mjs
+
 # Prisma
 /prisma/migrations/
 # On garde le schéma mais on ignore le binaire du moteur
