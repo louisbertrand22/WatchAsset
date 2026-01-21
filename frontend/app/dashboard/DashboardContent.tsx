@@ -46,8 +46,16 @@ export default function DashboardContent() {
       const storedUser = localStorage.getItem('user');
       
       if (storedToken && storedUser) {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
+        try {
+          setToken(storedToken);
+          setUser(JSON.parse(storedUser));
+        } catch (e) {
+          console.error('Erreur lors du parsing des données stockées:', e);
+          // Nettoyer le localStorage si les données sont corrompues
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('user');
+          router.push('/');
+        }
       } else {
         // Rediriger vers la page de connexion si non connecté
         router.push('/');

@@ -5,7 +5,8 @@ import Image from "next/image";
 export default function Home() {
   const handleLogin = () => {
     // Rediriger vers la route de login du backend
-    window.location.href = 'http://localhost:3001/auth/login';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+    window.location.href = `${backendUrl}/auth/login`;
   };
 
   return (
