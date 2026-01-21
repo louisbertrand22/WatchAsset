@@ -17,7 +17,7 @@ export const exchangeCodeForTokens = async (code: string, codeVerifier: string) 
     });
 
     return response.data; // Contient access_token, id_token, refresh_token
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erreur lors de l\'échange de tokens:', error.response?.data || error.message);
     throw new Error('Authentification échouée');
   }
