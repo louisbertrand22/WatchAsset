@@ -7,7 +7,13 @@ interface User {
   email: string;
   name: string;
   id: string;
+  username?: string;
 }
+
+// Use environment variable for SSO base URL, fallback to localhost for development
+const SSO_BASE_URL = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SSO_BASE_URL 
+  ? process.env.NEXT_PUBLIC_SSO_BASE_URL 
+  : 'http://localhost:3000';
 
 export default function DashboardContent() {
   const searchParams = useSearchParams();
@@ -15,52 +21,94 @@ export default function DashboardContent() {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // Function to fetch user information from SSO API
+  const fetchUserInfo = async (accessToken: string) => {
+    try {
+      const response = await fetch(`${SSO_BASE_URL}/userinfo`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user information: ${response.status} ${response.statusText}`);
+      }
+
+      const userData = await response.json();
+      
+      // Map the SSO response to our User interface
+      const mappedUser: User = {
+        email: userData.email,
+        name: userData.name || userData.username || userData.email,
+        id: userData.sub || userData.id,
+        username: userData.username,
+      };
+
+      setUser(mappedUser);
+      // Update localStorage with fresh user data
+      localStorage.setItem('user', JSON.stringify(mappedUser));
+      return mappedUser;
+    } catch (error) {
+      console.error('Error fetching user info from SSO:', error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
-    // Récupérer les paramètres de l'URL
-    const userParam = searchParams.get('user');
-    const tokenParam = searchParams.get('token');
-    const errorParam = searchParams.get('error');
-
-    if (errorParam) {
-      setError('Erreur d\'authentification. Veuillez réessayer.');
-      return;
-    }
-
-    if (userParam && tokenParam) {
+    const initializeUser = async () => {
       try {
-        const userData = JSON.parse(decodeURIComponent(userParam));
-        setUser(userData);
-        setToken(tokenParam);
-        
-        // Stocker le token dans le localStorage pour les futures requêtes
-        localStorage.setItem('accessToken', tokenParam);
-        localStorage.setItem('user', JSON.stringify(userData));
-      } catch (e) {
-        console.error('Erreur lors du parsing des données utilisateur:', e);
-        setError('Erreur lors de la récupération des informations utilisateur.');
-      }
-    } else {
-      // Vérifier si l'utilisateur est déjà connecté via localStorage
-      const storedToken = localStorage.getItem('accessToken');
-      const storedUser = localStorage.getItem('user');
-      
-      if (storedToken && storedUser) {
-        try {
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
-        } catch (e) {
-          console.error('Erreur lors du parsing des données stockées:', e);
-          // Nettoyer le localStorage si les données sont corrompues
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('user');
-          router.push('/');
+        // Check for error in URL params
+        const errorParam = searchParams.get('error');
+        if (errorParam) {
+          setError('Erreur d\'authentification. Veuillez réessayer.');
+          setLoading(false);
+          return;
         }
-      } else {
-        // Rediriger vers la page de connexion si non connecté
-        router.push('/');
+
+        // Check for token in URL params (after redirect from SSO)
+        const tokenParam = searchParams.get('token');
+        
+        if (tokenParam) {
+          // New login: Store token and fetch user info from SSO
+          setToken(tokenParam);
+          localStorage.setItem('accessToken', tokenParam);
+          
+          // Fetch user info from SSO API
+          await fetchUserInfo(tokenParam);
+          setLoading(false);
+        } else {
+          // Check if user is already logged in via localStorage
+          const storedToken = localStorage.getItem('accessToken');
+          
+          if (storedToken) {
+            setToken(storedToken);
+            
+            // Fetch fresh user info from SSO API
+            try {
+              await fetchUserInfo(storedToken);
+              setLoading(false);
+            } catch (e) {
+              // If token is invalid, clear storage and redirect to login
+              console.error('Token is invalid or expired:', e);
+              localStorage.removeItem('accessToken');
+              localStorage.removeItem('user');
+              router.push('/');
+            }
+          } else {
+            // No token found, redirect to login
+            router.push('/');
+          }
+        }
+      } catch (e) {
+        console.error('Error initializing user:', e);
+        setError('Erreur lors de la récupération des informations utilisateur.');
+        setLoading(false);
       }
-    }
+    };
+
+    initializeUser();
   }, [searchParams, router]);
 
   const handleLogout = () => {
@@ -86,7 +134,7 @@ export default function DashboardContent() {
     );
   }
 
-  if (!user) {
+  if (loading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-black">
         <div className="text-xl text-zinc-700 dark:text-zinc-300">
@@ -160,6 +208,11 @@ export default function DashboardContent() {
                   <p className="text-blue-100 text-lg">
                     {user.email}
                   </p>
+                  {user.username && (
+                    <p className="text-blue-100/90 text-sm mt-1">
+                      @{user.username}
+                    </p>
+                  )}
                   <p className="text-blue-100/80 text-sm mt-1">
                     ID: {String(user.id || '').substring(0, 8)}...
                   </p>

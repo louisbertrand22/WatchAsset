@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { exchangeCodeForTokens, getUserInfo } from '../services/ssoService.js';
+import { exchangeCodeForTokens } from '../services/ssoService.js';
 
 const router = Router();
 
@@ -26,20 +26,10 @@ router.get('/callback', async (req, res) => {
     // Note: On passe un code_verifier vide ou stocké en session pour PKCE
     const tokens = await exchangeCodeForTokens(code as string, "verifier_si_utilise");
     
-    // On récupère les infos de l'utilisateur (email, id)
-    const user = await getUserInfo(tokens.access_token);
-    
-    // Créer une session ou un cookie JWT pour WatchAsset
-    // Pour simplifier, on encode les données dans l'URL (dans un vrai projet, utiliser des cookies sécurisés)
-    const userParam = encodeURIComponent(JSON.stringify({ 
-      email: user.email, 
-      name: user.name || user.email,
-      id: user.sub || user.id
-    }));
-    
-    // Rediriger vers le dashboard frontend avec les informations de l'utilisateur
+    // Rediriger vers le dashboard frontend avec le token uniquement
+    // Le frontend fera l'appel à /userinfo pour récupérer les informations utilisateur
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/dashboard?user=${userParam}&token=${tokens.access_token}`);
+    res.redirect(`${frontendUrl}/dashboard?token=${tokens.access_token}`);
   } catch (err) {
     console.error('Erreur d\'authentification:', err);
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
