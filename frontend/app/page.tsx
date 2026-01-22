@@ -25,8 +25,22 @@ export default function Home() {
             Bienvenue sur WatchAsset
           </h1>
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Connectez-vous pour accéder à votre tableau de bord et gérer vos actifs.
+            Gérez et suivez votre collection de montres de luxe en toute simplicité.
           </p>
+          <div className="max-w-md space-y-3 text-base leading-7 text-zinc-600 dark:text-zinc-400">
+            <p className="flex items-start gap-2">
+              <span className="text-xl">📊</span>
+              <span>Suivez l'évolution des prix de vos montres en temps réel</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <span className="text-xl">💎</span>
+              <span>Gérez votre portefeuille de montres de collection</span>
+            </p>
+            <p className="flex items-start gap-2">
+              <span className="text-xl">📈</span>
+              <span>Consultez les tendances du marché horloger</span>
+            </p>
+          </div>
         </div>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
           <button
