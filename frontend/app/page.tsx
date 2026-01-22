@@ -29,15 +29,15 @@ export default function Home() {
           </p>
           <ul className="max-w-md space-y-3 text-base leading-7 text-zinc-600 dark:text-zinc-400">
             <li className="flex items-start gap-2">
-              <span className="text-xl" aria-label="Graphique" role="img">📊</span>
+              <span className="text-xl" aria-label="Icône de graphique" role="img">📊</span>
               <span>Suivez l'évolution des prix de vos montres en temps réel</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-xl" aria-label="Diamant" role="img">💎</span>
+              <span className="text-xl" aria-label="Icône de diamant" role="img">💎</span>
               <span>Gérez votre portefeuille de montres de collection</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-xl" aria-label="Tendances" role="img">📈</span>
+              <span className="text-xl" aria-label="Icône de tendances" role="img">📈</span>
               <span>Consultez les tendances du marché horloger</span>
             </li>
           </ul>
