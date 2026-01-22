@@ -6,7 +6,10 @@ const router = Router();
 // 1. Route pour démarrer la connexion
 router.get('/login', (req, res) => {
   // Dans un vrai projet, génère un code_challenge ici (PKCE)
-  const authUrl = `http://localhost:3000/authorize?client_id=watch-asset-app&response_type=code&scope=openid email profile&redirect_uri=http://localhost:3001/auth/callback`;
+  const ssoBaseUrl = process.env.SSO_BASE_URL || 'http://localhost:3000';
+  const clientId = process.env.SSO_CLIENT_ID || 'watch-asset-app';
+  const redirectUri = process.env.SSO_REDIRECT_URI || 'http://localhost:3001/auth/callback';
+  const authUrl = `${ssoBaseUrl}/authorize?client_id=${clientId}&response_type=code&scope=openid email profile&redirect_uri=${redirectUri}`;
   res.redirect(authUrl);
 });
 

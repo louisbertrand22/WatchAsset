@@ -25,7 +25,9 @@ cp .env.example .env
 SSO_CLIENT_SECRET=your_actual_client_secret_here
 ```
 
-**Important:** The `SSO_CLIENT_SECRET` must match the client secret configured in your SSO provider (running on `http://localhost:3000` by default). The error "invalid_client" means the client secret is incorrect or not set.
+**Important:** The `SSO_CLIENT_SECRET` must match the client secret configured in your SSO provider. The error "invalid_client" means the client secret is incorrect or not set.
+
+**Note:** The seed script (`scripts/seed_watches.js`) contains sample image URLs as data for demonstration purposes. These are not configuration URLs and are part of the seed data itself.
 
 ### Development
 
@@ -50,7 +52,12 @@ cd frontend
 npm install
 ```
 
-3. Start the frontend development server:
+3. Configure frontend environment variables:
+```bash
+cp .env.example .env
+```
+
+4. Start the frontend development server:
 ```bash
 npm run dev
 ```
@@ -75,12 +82,18 @@ npm start
 
 See `.env.example` for all required environment variables:
 
+**Backend (.env in project root):**
 - `PORT` - Server port (default: 3001)
 - `FRONTEND_URL` - Frontend URL for redirects (default: http://localhost:3000)
 - `SSO_BASE_URL` - SSO server URL (default: http://localhost:3000)
 - `SSO_CLIENT_ID` - OAuth client ID (default: watch-asset-app)
 - `SSO_CLIENT_SECRET` - OAuth client secret (**required**)
 - `SSO_REDIRECT_URI` - OAuth redirect URI (default: http://localhost:3001/auth/callback)
+- `BACKEND_URL` - Backend API URL (default: http://localhost:3001)
+- `DATABASE_URL` - PostgreSQL connection string
+
+**Frontend (.env in frontend directory):**
+- `NEXT_PUBLIC_BACKEND_URL` - Backend API URL (default: http://localhost:3001)
 
 ## API Endpoints
 
