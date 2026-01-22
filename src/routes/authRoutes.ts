@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { exchangeCodeForTokens } from '../services/ssoService.js';
+import { exchangeCodeForTokens, getUserInfo } from '../services/ssoService.js';
 
 const router = Router();
 
@@ -34,6 +34,33 @@ router.get('/callback', async (req, res) => {
     console.error('Erreur d\'authentification:', err);
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     res.redirect(`${frontendUrl}?error=auth_failed`);
+  }
+});
+
+// 3. Route pour récupérer les informations de l'utilisateur connecté
+router.get('/userinfo', async (req, res) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token d\'accès manquant ou invalide' });
+  }
+  
+  const accessToken = authHeader.substring(7).trim(); // Enlever 'Bearer ' et espaces
+  
+  if (!accessToken) {
+    return res.status(401).json({ error: 'Token d\'accès vide' });
+  }
+  
+  try {
+    const userInfo = await getUserInfo(accessToken);
+    res.json(userInfo);
+  } catch (error: any) {
+    console.error('Erreur lors de la récupération des informations utilisateur:', error.response?.data || error.message);
+    // Handle axios errors properly - if response exists, use its status, otherwise default to 401 for auth issues
+    const statusCode = error.response?.status || (error.message?.includes('Authentification') ? 401 : 500);
+    res.status(statusCode).json({ 
+      error: 'Impossible de récupérer les informations utilisateur' 
+    });
   }
 });
 

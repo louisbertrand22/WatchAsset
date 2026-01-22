@@ -102,18 +102,22 @@ See `.env.example` for all required environment variables:
 - `GET /health` - Health check endpoint
 - `GET /auth/login` - Initiate SSO login
 - `GET /auth/callback` - SSO callback endpoint (redirects to frontend with access token)
+- `GET /auth/userinfo` - Get current user information (requires Bearer token)
 
 ### SSO Integration
-The dashboard fetches user information directly from the SSO API:
-- **Endpoint**: `GET {SSO_BASE_URL}/userinfo`
+The dashboard fetches user information through the backend API, which uses the SSOService to communicate with SSO:
+- **Backend Endpoint**: `GET {BACKEND_URL}/auth/userinfo`
 - **Authentication**: Bearer token in Authorization header
+- **Backend Implementation**: Uses `getUserInfo` function from `src/services/ssoService.ts`
+- **SSO Endpoint (internal)**: The backend calls `GET {SSO_BASE_URL}/userinfo`
 - **Response**: User object with email, name, username, and id fields
 
 The frontend automatically:
 1. Receives the access token from the SSO callback
-2. Calls the SSO `/userinfo` endpoint to fetch user details
-3. Displays user information in the dashboard
-4. Validates the token on subsequent visits and refreshes user data
+2. Calls the backend `/auth/userinfo` endpoint to fetch user details
+3. The backend uses SSOService's `getUserInfo` function to retrieve data from SSO
+4. Displays user information in the dashboard
+5. Validates the token on subsequent visits and refreshes user data
 
 ## Troubleshooting
 
