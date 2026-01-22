@@ -14,6 +14,8 @@ const BACKEND_URL = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_BAC
   ? process.env.NEXT_PUBLIC_BACKEND_URL 
   : 'http://localhost:3001';
 
+const USER_ID_DISPLAY_LENGTH = 16;
+
 export default function SettingsContent() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -206,7 +208,7 @@ export default function SettingsContent() {
                     </p>
                   )}
                   <p className="text-zinc-500 dark:text-zinc-500 text-sm">
-                    ID: {String(user.id || '').substring(0, 16)}...
+                    ID: {String(user.id || '').substring(0, USER_ID_DISPLAY_LENGTH)}...
                   </p>
                 </div>
               </div>
