@@ -20,5 +20,6 @@ app.get('/health', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 WatchAsset API lancée sur http://localhost:${PORT}`);
+  const backendUrl = process.env.BACKEND_URL || `http://localhost:${PORT}`;
+  console.log(`🚀 WatchAsset API lancée sur ${backendUrl}`);
 });
