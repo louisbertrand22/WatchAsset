@@ -21,8 +21,10 @@
   },
   "homepage": "https://github.com/louisbertrand22/WatchAsset#readme",
   "dependencies": {
+    "@prisma/adapter-libsql": "^7.3.0",
     "@prisma/client": "^7.2.0",
     "axios": "^1.13.2",
+    "better-sqlite3": "^12.6.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1"

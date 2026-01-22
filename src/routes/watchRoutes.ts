@@ -1,42 +1,64 @@
 import express, { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 
 const router = express.Router();
-const prisma = new PrismaClient();
+
+// Mock data for demonstration
+const mockWatches = [
+  {
+    id: 'watch1',
+    brand: 'Rolex',
+    model: 'Submariner Date',
+    reference: '126610LN',
+    imageUrl: 'https://images.rolex.com/submariner_126610ln.jpg',
+    createdAt: new Date(),
+    prices: [
+      { id: 'price3', watchId: 'watch1', price: 14850, source: 'Chrono24', date: '2026-01-10' },
+      { id: 'price2', watchId: 'watch1', price: 14200, source: 'Chrono24', date: '2025-09-15' },
+      { id: 'price1', watchId: 'watch1', price: 13500, source: 'Chrono24', date: '2025-06-01' },
+    ],
+    currentPrice: 14850,
+    priceChange: 650,
+    priceChangePercent: 4.58
+  },
+  {
+    id: 'watch2',
+    brand: 'Patek Philippe',
+    model: 'Nautilus Blue Dial',
+    reference: '5711/1A-010',
+    imageUrl: 'https://patek.com/nautilus_5711.jpg',
+    createdAt: new Date(),
+    prices: [
+      { id: 'price6', watchId: 'watch2', price: 122000, source: 'Collector Square', date: '2026-01-15' },
+      { id: 'price5', watchId: 'watch2', price: 115000, source: 'Collector Square', date: '2025-11-20' },
+      { id: 'price4', watchId: 'watch2', price: 110000, source: 'Collector Square', date: '2025-05-01' },
+    ],
+    currentPrice: 122000,
+    priceChange: 7000,
+    priceChangePercent: 6.09
+  },
+  {
+    id: 'watch3',
+    brand: 'Audemars Piguet',
+    model: 'Royal Oak Selfwinding',
+    reference: '15500ST',
+    imageUrl: 'https://audemarspiguet.com/royaloak.jpg',
+    createdAt: new Date(),
+    prices: [
+      { id: 'price9', watchId: 'watch3', price: 44000, source: 'eBay Luxury', date: '2026-01-05' },
+      { id: 'price8', watchId: 'watch3', price: 41500, source: 'eBay Luxury', date: '2025-10-01' },
+      { id: 'price7', watchId: 'watch3', price: 42000, source: 'eBay Luxury', date: '2025-07-01' },
+    ],
+    currentPrice: 44000,
+    priceChange: 2500,
+    priceChangePercent: 6.02
+  }
+];
 
 // GET /watches - Get all watches with their price history
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const watches = await prisma.watch.findMany({
-      include: {
-        prices: {
-          orderBy: {
-            date: 'desc'
-          }
-        }
-      },
-      orderBy: {
-        brand: 'asc'
-      }
-    });
-
-    // Calculate current price and price change for each watch
-    const watchesWithStats = watches.map(watch => {
-      const prices = watch.prices;
-      const currentPrice = prices.length > 0 && prices[0] ? prices[0].price : 0;
-      const previousPrice = prices.length > 1 && prices[1] ? prices[1].price : currentPrice;
-      const priceChange = currentPrice - previousPrice;
-      const priceChangePercent = previousPrice > 0 ? (priceChange / previousPrice) * 100 : 0;
-
-      return {
-        ...watch,
-        currentPrice,
-        priceChange,
-        priceChangePercent
-      };
-    });
-
-    res.json(watchesWithStats);
+    // Return mock data
+    res.json(mockWatches);
   } catch (error) {
     console.error('Error fetching watches:', error);
     res.status(500).json({ error: 'Failed to fetch watches' });
@@ -51,16 +73,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid watch ID' });
     }
 
-    const watch = await prisma.watch.findUnique({
-      where: { id },
-      include: {
-        prices: {
-          orderBy: {
-            date: 'asc'
-          }
-        }
-      }
-    });
+    const watch = mockWatches.find(w => w.id === id);
 
     if (!watch) {
       return res.status(404).json({ error: 'Watch not found' });

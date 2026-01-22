@@ -1,14 +1,10 @@
-require('dotenv').config(); // Charge le .env
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
+require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 
-// On force l'URL de la base de données ici
-const prisma = new PrismaClient({
-  __internal: {
-    configOverride: {
-      datasourceUrl: process.env.DATABASE_URL
-    }
-  }
-});
+const prisma = new PrismaClient();
 
 async function main() {
   console.log('Début du seeding des montres...');
