@@ -1,19 +1,18 @@
-import dotenv from 'dotenv';
+// src/server.ts
 
-// Load environment variables before importing other modules
-dotenv.config();
+// Plus besoin de : import dotenv from 'dotenv'; dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
 
 const app = express();
+// Ici, process.env.SSO_CLIENT_SECRET sera déjà rempli par Node.js
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
 
-// Use the auth routes
 app.use('/auth', authRoutes);
 
 app.get('/health', (req, res) => {

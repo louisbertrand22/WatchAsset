@@ -2,11 +2,16 @@ import axios from 'axios';
 
 const SSO_BASE_URL = process.env.SSO_BASE_URL || 'http://localhost:3000';
 const CLIENT_ID = process.env.SSO_CLIENT_ID || 'watch-asset-app';
-const CLIENT_SECRET = process.env.SSO_CLIENT_SECRET;
 const REDIRECT_URI = process.env.SSO_REDIRECT_URI || 'http://localhost:3001/auth/callback';
 
 export const exchangeCodeForTokens = async (code: string, codeVerifier: string) => {
-  if (!CLIENT_SECRET) {
+  console.log("--- DEBUG ENV COMPLET ---");
+  console.log("PORT:", process.env.PORT);
+  console.log("SSO_CLIENT_ID:", process.env.SSO_CLIENT_ID);
+  console.log("SSO_CLIENT_SECRET:", process.env.SSO_CLIENT_SECRET);
+  console.log("--------------------------");
+  const clientSecret = process.env.SSO_CLIENT_SECRET;
+  if (!clientSecret) {
     throw new Error('SSO_CLIENT_SECRET is not configured. Please set it in your .env file.');
   }
   
@@ -16,7 +21,7 @@ export const exchangeCodeForTokens = async (code: string, codeVerifier: string) 
       code: code,
       redirect_uri: REDIRECT_URI,
       client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET, // Si confidentiel
+      client_secret: clientSecret, // Si confidentiel
       code_verifier: codeVerifier // Nécessaire pour PKCE
     });
 

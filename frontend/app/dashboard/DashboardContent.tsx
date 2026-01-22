@@ -34,7 +34,7 @@ export default function DashboardContent() {
         setToken(tokenParam);
         
         // Stocker le token dans le localStorage pour les futures requêtes
-        localStorage.setItem('access_token', tokenParam);
+        localStorage.setItem('accessToken', tokenParam);
         localStorage.setItem('user', JSON.stringify(userData));
       } catch (e) {
         console.error('Erreur lors du parsing des données utilisateur:', e);
@@ -42,7 +42,7 @@ export default function DashboardContent() {
       }
     } else {
       // Vérifier si l'utilisateur est déjà connecté via localStorage
-      const storedToken = localStorage.getItem('access_token');
+      const storedToken = localStorage.getItem('accessToken');
       const storedUser = localStorage.getItem('user');
       
       if (storedToken && storedUser) {
@@ -52,7 +52,7 @@ export default function DashboardContent() {
         } catch (e) {
           console.error('Erreur lors du parsing des données stockées:', e);
           // Nettoyer le localStorage si les données sont corrompues
-          localStorage.removeItem('access_token');
+          localStorage.removeItem('accessToken');
           localStorage.removeItem('user');
           router.push('/');
         }
@@ -64,7 +64,7 @@ export default function DashboardContent() {
   }, [searchParams, router]);
 
   const handleLogout = () => {
-    localStorage.removeItem('access_token');
+    localStorage.removeItem('accessToken');
     localStorage.removeItem('user');
     router.push('/');
   };
@@ -161,7 +161,7 @@ export default function DashboardContent() {
                     {user.email}
                   </p>
                   <p className="text-blue-100/80 text-sm mt-1">
-                    ID: {user.id.substring(0, 8)}...
+                    ID: {String(user.id || '').substring(0, 8)}...
                   </p>
                 </div>
               </div>
