@@ -10,7 +10,10 @@ interface User {
   username?: string;
 }
 
-const SSO_BASE_URL = 'http://localhost:3000';
+// Use environment variable for SSO base URL, fallback to localhost for development
+const SSO_BASE_URL = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SSO_BASE_URL 
+  ? process.env.NEXT_PUBLIC_SSO_BASE_URL 
+  : 'http://localhost:3000';
 
 export default function DashboardContent() {
   const searchParams = useSearchParams();
@@ -30,7 +33,7 @@ export default function DashboardContent() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch user information');
+        throw new Error(`Failed to fetch user information: ${response.status} ${response.statusText}`);
       }
 
       const userData = await response.json();

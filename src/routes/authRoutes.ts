@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { exchangeCodeForTokens, getUserInfo } from '../services/ssoService.js';
+import { exchangeCodeForTokens } from '../services/ssoService.js';
 
 const router = Router();
 
