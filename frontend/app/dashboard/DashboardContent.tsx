@@ -98,11 +98,20 @@ export default function DashboardContent() {
 
   // Get initials for avatar
   const getInitials = (name: string) => {
-    const names = name.split(' ');
-    if (names.length >= 2) {
+    if (!name || name.trim().length === 0) {
+      return 'U';
+    }
+    const names = name.trim().split(' ').filter(n => n.length > 0);
+    if (names.length >= 2 && names[0].length > 0 && names[names.length - 1].length > 0) {
       return (names[0][0] + names[names.length - 1][0]).toUpperCase();
     }
-    return name.substring(0, 2).toUpperCase();
+    if (names.length > 0 && names[0].length >= 2) {
+      return names[0].substring(0, 2).toUpperCase();
+    }
+    if (names.length > 0 && names[0].length === 1) {
+      return names[0][0].toUpperCase();
+    }
+    return 'U';
   };
 
   return (
