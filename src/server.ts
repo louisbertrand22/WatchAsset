@@ -6,6 +6,7 @@ import express from 'express';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
 import watchRoutes from './routes/watchRoutes.js';
+import userWatchRoutes from './routes/userWatchRoutes.js';
 
 const app = express();
 // Ici, process.env.SSO_CLIENT_SECRET sera déjà rempli par Node.js
@@ -16,6 +17,7 @@ app.use(express.json());
 
 app.use('/auth', authRoutes);
 app.use('/watches', watchRoutes);
+app.use('/user-watches', userWatchRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'WatchAsset API is running' });

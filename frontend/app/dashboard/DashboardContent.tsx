@@ -10,6 +10,19 @@ interface User {
   username?: string;
 }
 
+interface UserWatch {
+  id: string;
+  watchId: string;
+  purchasePrice: number | null;
+  purchaseDate: string | null;
+  watch?: {
+    brand: string;
+    model: string;
+    reference: string;
+    imageUrl?: string;
+  };
+}
+
 // Use environment variable for backend URL, fallback to localhost for development
 const BACKEND_URL = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_BACKEND_URL 
   ? process.env.NEXT_PUBLIC_BACKEND_URL 
@@ -19,9 +32,10 @@ export default function DashboardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [userWatches, setUserWatches] = useState<UserWatch[]>([]);
+  const [watchesLoading, setWatchesLoading] = useState<boolean>(false);
 
   // Function to fetch user information from backend API (which uses SSOService)
   const fetchUserInfo = async (accessToken: string) => {
@@ -56,13 +70,37 @@ export default function DashboardContent() {
     }
   };
 
+  // Function to fetch user's watch collection
+  const fetchUserWatches = async (accessToken: string) => {
+    setWatchesLoading(true);
+    try {
+      const response = await fetch(`${BACKEND_URL}/user-watches`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user watches');
+      }
+
+      const watches = await response.json();
+      setUserWatches(watches);
+    } catch (error) {
+      console.error('Error fetching user watches:', error);
+      // Don't show error to user, just log it
+    } finally {
+      setWatchesLoading(false);
+    }
+  };
+
   useEffect(() => {
     const initializeUser = async () => {
       try {
         // Check for error in URL params
         const errorParam = searchParams.get('error');
         if (errorParam) {
-          setError('Erreur d\'authentification. Veuillez réessayer.');
+          setError('Erreur d&apos;authentification. Veuillez réessayer.');
           setLoading(false);
           return;
         }
@@ -72,22 +110,23 @@ export default function DashboardContent() {
         
         if (tokenParam) {
           // New login: Store token and fetch user info from SSO
-          setToken(tokenParam);
           localStorage.setItem('accessToken', tokenParam);
           
           // Fetch user info from SSO API
           await fetchUserInfo(tokenParam);
+          // Fetch user's watch collection
+          await fetchUserWatches(tokenParam);
           setLoading(false);
         } else {
           // Check if user is already logged in via localStorage
           const storedToken = localStorage.getItem('accessToken');
           
           if (storedToken) {
-            setToken(storedToken);
-            
             // Fetch fresh user info from SSO API
             try {
               await fetchUserInfo(storedToken);
+              // Fetch user's watch collection
+              await fetchUserWatches(storedToken);
               setLoading(false);
             } catch (e) {
               // If token is invalid, clear storage and redirect to login
@@ -123,12 +162,12 @@ export default function DashboardContent() {
         <div className="rounded-2xl bg-white p-8 shadow-2xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
           <h1 className="text-2xl font-bold text-red-600 mb-4">Erreur</h1>
           <p className="text-zinc-700 dark:text-zinc-300 mb-4">{error}</p>
-          <a
-            href="/"
+          <button
+            onClick={() => router.push('/')}
             className="inline-block rounded-full bg-black px-6 py-3 text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-all"
           >
-            Retour à l'accueil
-          </a>
+            Retour à l&apos;accueil
+          </button>
         </div>
       </div>
     );
@@ -237,10 +276,10 @@ export default function DashboardContent() {
               Total Montres
             </h3>
             <p className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-              0
+              {userWatches.length}
             </p>
             <p className="text-zinc-500 dark:text-zinc-500 text-sm mt-2">
-              Aucune montre ajoutée
+              {userWatches.length === 0 ? 'Aucune montre ajoutée' : `Montre${userWatches.length > 1 ? 's' : ''} dans votre collection`}
             </p>
           </div>
 
@@ -257,7 +296,7 @@ export default function DashboardContent() {
               Valeur du Portfolio
             </h3>
             <p className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">
-              €0
+              €{userWatches.reduce((sum, w) => sum + (w.purchasePrice || 0), 0).toLocaleString('fr-FR')}
             </p>
             <p className="text-zinc-500 dark:text-zinc-500 text-sm mt-2">
               Valeur totale estimée
@@ -329,7 +368,10 @@ export default function DashboardContent() {
               Actions Rapides
             </h3>
             <div className="space-y-3">
-              <button className="w-full flex items-center gap-3 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left">
+              <button 
+                onClick={() => router.push('/watches/add')}
+                className="w-full flex items-center gap-3 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left"
+              >
                 <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
                   <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -384,6 +426,104 @@ export default function DashboardContent() {
           </div>
         </div>
 
+        {/* My Collection Section */}
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 flex items-center gap-2">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Ma Collection
+            </h3>
+            <button
+              onClick={() => router.push('/watches/add')}
+              className="flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Ajouter une montre
+            </button>
+          </div>
+
+          {watchesLoading ? (
+            <div className="rounded-2xl bg-white dark:bg-zinc-900 p-12 shadow-lg border border-zinc-200 dark:border-zinc-800 text-center">
+              <p className="text-zinc-600 dark:text-zinc-400">Chargement de votre collection...</p>
+            </div>
+          ) : userWatches.length === 0 ? (
+            <div className="rounded-2xl bg-white dark:bg-zinc-900 p-12 shadow-lg border border-zinc-200 dark:border-zinc-800 text-center">
+              <div className="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-zinc-400 dark:text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50 mb-2">
+                Votre collection est vide
+              </h3>
+              <p className="text-zinc-600 dark:text-zinc-400 mb-6">
+                Commencez à suivre votre collection en ajoutant votre première montre
+              </p>
+              <button
+                onClick={() => router.push('/watches/add')}
+                className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-white hover:bg-blue-700 transition-colors shadow-lg"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Ajouter ma première montre
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {userWatches.map((userWatch) => (
+                <div
+                  key={userWatch.id}
+                  className="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-lg border border-zinc-200 dark:border-zinc-800 hover:shadow-xl transition-shadow"
+                >
+                  {/* Watch Image Placeholder */}
+                  <div className="w-full h-48 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4">
+                    <svg className="w-16 h-16 text-zinc-400 dark:text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+
+                  {/* Watch Info */}
+                  <div className="mb-4">
+                    <p className="text-xs text-zinc-500 dark:text-zinc-500 uppercase tracking-wider mb-1">
+                      Réf: {userWatch.watchId}
+                    </p>
+                    <h4 className="text-lg font-bold text-zinc-900 dark:text-zinc-50">
+                      Montre de Collection
+                    </h4>
+                  </div>
+
+                  {/* Purchase Details */}
+                  {(userWatch.purchasePrice || userWatch.purchaseDate) && (
+                    <div className="space-y-2 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                      {userWatch.purchasePrice && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-zinc-600 dark:text-zinc-400">Prix d&apos;achat:</span>
+                          <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                            €{userWatch.purchasePrice.toLocaleString('fr-FR')}
+                          </span>
+                        </div>
+                      )}
+                      {userWatch.purchaseDate && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-zinc-600 dark:text-zinc-400">Date d&apos;achat:</span>
+                          <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+                            {new Date(userWatch.purchaseDate).toLocaleDateString('fr-FR')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Info Banner */}
         <div className="mt-8 rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 p-6">
           <div className="flex items-start gap-4">
@@ -397,7 +537,7 @@ export default function DashboardContent() {
                 Session Active
               </h4>
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                Vous êtes maintenant connecté à WatchAsset. Votre session est sécurisée et vous avez accès à toutes les fonctionnalités de l'application.
+                Vous êtes maintenant connecté à WatchAsset. Votre session est sécurisée et vous avez accès à toutes les fonctionnalités de l&apos;application.
               </p>
             </div>
           </div>
