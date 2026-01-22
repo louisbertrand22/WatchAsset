@@ -10,10 +10,10 @@ interface User {
   username?: string;
 }
 
-// Use environment variable for SSO base URL, fallback to localhost for development
-const SSO_BASE_URL = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SSO_BASE_URL 
-  ? process.env.NEXT_PUBLIC_SSO_BASE_URL 
-  : 'http://localhost:3000';
+// Use environment variable for backend URL, fallback to localhost for development
+const BACKEND_URL = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_BACKEND_URL 
+  ? process.env.NEXT_PUBLIC_BACKEND_URL 
+  : 'http://localhost:3001';
 
 export default function DashboardContent() {
   const searchParams = useSearchParams();
@@ -23,10 +23,10 @@ export default function DashboardContent() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Function to fetch user information from SSO API
+  // Function to fetch user information from backend API (which uses SSOService)
   const fetchUserInfo = async (accessToken: string) => {
     try {
-      const response = await fetch(`${SSO_BASE_URL}/userinfo`, {
+      const response = await fetch(`${BACKEND_URL}/auth/userinfo`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },
@@ -51,7 +51,7 @@ export default function DashboardContent() {
       localStorage.setItem('user', JSON.stringify(mappedUser));
       return mappedUser;
     } catch (error) {
-      console.error('Error fetching user info from SSO:', error);
+      console.error('Error fetching user info from backend:', error);
       throw error;
     }
   };
