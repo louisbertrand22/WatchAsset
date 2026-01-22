@@ -94,12 +94,26 @@ See `.env.example` for all required environment variables:
 
 **Frontend (.env in frontend directory):**
 - `NEXT_PUBLIC_BACKEND_URL` - Backend API URL (default: http://localhost:3001)
+- `NEXT_PUBLIC_SSO_BASE_URL` - SSO API URL for fetching user info (default: http://localhost:3000)
 
 ## API Endpoints
 
+### Backend API
 - `GET /health` - Health check endpoint
 - `GET /auth/login` - Initiate SSO login
-- `GET /auth/callback` - SSO callback endpoint
+- `GET /auth/callback` - SSO callback endpoint (redirects to frontend with access token)
+
+### SSO Integration
+The dashboard fetches user information directly from the SSO API:
+- **Endpoint**: `GET {SSO_BASE_URL}/userinfo`
+- **Authentication**: Bearer token in Authorization header
+- **Response**: User object with email, name, username, and id fields
+
+The frontend automatically:
+1. Receives the access token from the SSO callback
+2. Calls the SSO `/userinfo` endpoint to fetch user details
+3. Displays user information in the dashboard
+4. Validates the token on subsequent visits and refreshes user data
 
 ## Troubleshooting
 
