@@ -76,6 +76,18 @@ export default function AddWatchContent() {
         return;
       }
 
+      // Validate purchase price before sending
+      let validatedPrice: number | null = null;
+      if (purchasePrice) {
+        const parsed = parseFloat(purchasePrice);
+        if (isNaN(parsed) || parsed < 0) {
+          setError('Le prix d\'achat doit être un nombre valide');
+          setSubmitting(false);
+          return;
+        }
+        validatedPrice = parsed;
+      }
+
       const response = await fetch(`${BACKEND_URL}/user-watches`, {
         method: 'POST',
         headers: {
@@ -84,7 +96,7 @@ export default function AddWatchContent() {
         },
         body: JSON.stringify({
           watchId: selectedWatch,
-          purchasePrice: purchasePrice ? parseFloat(purchasePrice) : null,
+          purchasePrice: validatedPrice,
           purchaseDate: purchaseDate || null
         })
       });

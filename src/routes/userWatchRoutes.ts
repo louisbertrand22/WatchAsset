@@ -1,9 +1,14 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 
 const router = express.Router();
 
+// Extend Request interface to include userId
+interface AuthenticatedRequest extends Request {
+  userId?: string;
+}
+
 // Middleware to extract and validate user ID from Authorization header
-const authenticateUser = (req: Request, res: Response, next: any) => {
+const authenticateUser = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -19,19 +24,26 @@ const authenticateUser = (req: Request, res: Response, next: any) => {
   // In a real implementation, we would validate the JWT token here
   // and extract the user ID (sub) from it
   // For now, we'll use a mock user ID
-  // @ts-ignore
-  req.userId = 'mock-user-id';
+  (req as AuthenticatedRequest).userId = 'mock-user-id';
   next();
 };
 
+interface UserWatch {
+  id: string;
+  userId: string;
+  watchId: string;
+  purchasePrice: number | null;
+  purchaseDate: string | null;
+  createdAt: string;
+}
+
 // Mock data storage (in production, this would use Prisma with database)
-const mockUserWatches: any[] = [];
+const mockUserWatches: UserWatch[] = [];
 
 // GET /user-watches - Get all watches for the authenticated user
 router.get('/', authenticateUser, async (req: Request, res: Response) => {
   try {
-    // @ts-ignore
-    const userId = req.userId;
+    const userId = (req as AuthenticatedRequest).userId;
     
     // Filter user watches by userId and return with watch details
     const userWatches = mockUserWatches.filter(uw => uw.userId === userId);
@@ -46,8 +58,7 @@ router.get('/', authenticateUser, async (req: Request, res: Response) => {
 // POST /user-watches - Add a watch to user's collection
 router.post('/', authenticateUser, async (req: Request, res: Response) => {
   try {
-    // @ts-ignore
-    const userId = req.userId;
+    const userId = (req as AuthenticatedRequest).userId;
     const { watchId, purchasePrice, purchaseDate } = req.body;
     
     if (!watchId) {
@@ -63,12 +74,22 @@ router.post('/', authenticateUser, async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Cette montre est déjà dans votre collection' });
     }
     
+    // Parse and validate purchase price
+    let validatedPrice: number | null = null;
+    if (purchasePrice !== undefined && purchasePrice !== null && purchasePrice !== '') {
+      const parsed = parseFloat(purchasePrice);
+      if (isNaN(parsed) || parsed < 0) {
+        return res.status(400).json({ error: 'Prix d\'achat invalide' });
+      }
+      validatedPrice = parsed;
+    }
+    
     // Create new user watch
-    const newUserWatch = {
+    const newUserWatch: UserWatch = {
       id: `user-watch-${Date.now()}`,
-      userId,
+      userId: userId!,
       watchId,
-      purchasePrice: purchasePrice ? parseFloat(purchasePrice) : null,
+      purchasePrice: validatedPrice,
       purchaseDate: purchaseDate || null,
       createdAt: new Date().toISOString()
     };
@@ -85,8 +106,7 @@ router.post('/', authenticateUser, async (req: Request, res: Response) => {
 // DELETE /user-watches/:id - Remove a watch from user's collection
 router.delete('/:id', authenticateUser, async (req: Request, res: Response) => {
   try {
-    // @ts-ignore
-    const userId = req.userId;
+    const userId = (req as AuthenticatedRequest).userId;
     const { id } = req.params;
     
     const index = mockUserWatches.findIndex(
