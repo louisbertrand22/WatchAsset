@@ -36,6 +36,27 @@ npm run dev
 
 The API will be available at `http://localhost:3001`
 
+### Frontend Development
+
+To run the frontend in development mode:
+
+1. Navigate to the frontend directory:
+```bash
+cd frontend
+```
+
+2. Install frontend dependencies:
+```bash
+npm install
+```
+
+3. Start the frontend development server:
+```bash
+npm run dev
+```
+
+The frontend will be available at `http://localhost:3000`
+
 ### Build
 
 Build the TypeScript code:
