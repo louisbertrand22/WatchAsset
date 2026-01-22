@@ -68,10 +68,7 @@ router.get('/', async (req: Request, res: Response) => {
 // GET /watches/:id - Get a single watch with full price history
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const id = typeof req.params.id === 'string' ? req.params.id : undefined;
-    if (!id) {
-      return res.status(400).json({ error: 'Invalid watch ID' });
-    }
+    const { id } = req.params;
 
     const watch = mockWatches.find(w => w.id === id);
 

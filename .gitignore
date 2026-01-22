@@ -38,6 +38,10 @@ frontend/**/*.d.ts.map
 query-engine-*
 migration-engine-*
 introspection-engine-*
+# SQLite database files
+*.db
+*.db-shm
+*.db-wal
 
 # Debug & Logs
 npm-debug.log*

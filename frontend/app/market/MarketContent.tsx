@@ -31,6 +31,15 @@ export default function MarketContent() {
   const [watches, setWatches] = useState<Watch[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+
+  const handleImageError = (watchId: string) => {
+    setImageErrors(prev => {
+      const newSet = new Set(prev);
+      newSet.add(watchId);
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     const fetchWatches = async () => {
@@ -242,22 +251,13 @@ export default function MarketContent() {
                 <div className="flex flex-col lg:flex-row gap-6">
                   {/* Watch Image */}
                   <div className="lg:w-48 flex-shrink-0">
-                    {watch.imageUrl ? (
+                    {watch.imageUrl && !imageErrors.has(watch.id) ? (
                       <div className="w-full h-48 lg:h-full rounded-xl bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
                         <img
                           src={watch.imageUrl}
                           alt={`${watch.brand} ${watch.model}`}
                           className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                            (e.target as HTMLImageElement).parentElement!.innerHTML = `
-                              <div class="w-full h-full flex items-center justify-center">
-                                <svg class="w-16 h-16 text-zinc-400 dark:text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                              </div>
-                            `;
-                          }}
+                          onError={() => handleImageError(watch.id)}
                         />
                       </div>
                     ) : (
