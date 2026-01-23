@@ -1,9 +1,6 @@
 // Utility functions for authentication and token management
 
-// Use environment variable for backend URL, fallback to localhost for development
-const BACKEND_URL = typeof window !== 'undefined' && process.env.NEXT_PUBLIC_BACKEND_URL 
-  ? process.env.NEXT_PUBLIC_BACKEND_URL 
-  : 'http://localhost:3001';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
 
 /**
  * Refresh the access token using the refresh token
@@ -49,6 +46,7 @@ export const refreshAccessToken = async (): Promise<string | null> => {
  * @param options Fetch options
  * @param isRetry Internal flag to prevent infinite retry loops
  * @returns The fetch response
+ * @throws Error if no access token is available
  */
 export const authenticatedFetch = async (
   url: string,
@@ -58,7 +56,14 @@ export const authenticatedFetch = async (
   const accessToken = localStorage.getItem('accessToken');
   
   if (!accessToken) {
-    throw new Error('No access token available');
+    // Return a 401-like response instead of throwing
+    return new Response(JSON.stringify({ error: 'No access token available' }), {
+      status: 401,
+      statusText: 'Unauthorized',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
   }
 
   const response = await fetch(url, {

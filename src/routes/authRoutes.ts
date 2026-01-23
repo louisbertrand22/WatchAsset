@@ -89,6 +89,12 @@ router.post('/refresh', async (req, res) => {
       client_secret: clientSecret
     });
     
+    // Always return the new tokens from the response
+    // If SSO doesn't provide a new refresh token, log a warning but use the old one
+    if (!response.data.refresh_token) {
+      console.warn('SSO did not return a new refresh token, reusing the existing one');
+    }
+    
     res.json({
       access_token: response.data.access_token,
       refresh_token: response.data.refresh_token || refresh_token
