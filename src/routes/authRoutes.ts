@@ -26,10 +26,10 @@ router.get('/callback', async (req, res) => {
     // Note: On passe un code_verifier vide ou stocké en session pour PKCE
     const tokens = await exchangeCodeForTokens(code as string, "verifier_si_utilise");
     
-    // Rediriger vers le dashboard frontend avec le token uniquement
+    // Rediriger vers le dashboard frontend avec le token et le refresh_token
     // Le frontend fera l'appel à /userinfo pour récupérer les informations utilisateur
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/dashboard?token=${tokens.access_token}`);
+    res.redirect(`${frontendUrl}/dashboard?token=${tokens.access_token}&refresh_token=${tokens.refresh_token}`);
   } catch (err) {
     console.error('Erreur d\'authentification:', err);
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
@@ -60,6 +60,44 @@ router.get('/userinfo', async (req, res) => {
     const statusCode = error.response?.status || (error.message?.includes('Authentification') ? 401 : 500);
     res.status(statusCode).json({ 
       error: 'Impossible de récupérer les informations utilisateur' 
+    });
+  }
+});
+
+// 4. Route pour rafraîchir le token d'accès
+router.post('/refresh', async (req, res) => {
+  const { refresh_token } = req.body;
+  
+  if (!refresh_token) {
+    return res.status(400).json({ error: 'Refresh token manquant' });
+  }
+  
+  try {
+    const ssoBaseUrl = process.env.SSO_BASE_URL || 'http://localhost:3000';
+    const clientId = process.env.SSO_CLIENT_ID || 'watch-asset-app';
+    const clientSecret = process.env.SSO_CLIENT_SECRET;
+    
+    if (!clientSecret) {
+      throw new Error('SSO_CLIENT_SECRET is not configured');
+    }
+    
+    const axios = (await import('axios')).default;
+    const response = await axios.post(`${ssoBaseUrl}/token`, {
+      grant_type: 'refresh_token',
+      refresh_token: refresh_token,
+      client_id: clientId,
+      client_secret: clientSecret
+    });
+    
+    res.json({
+      access_token: response.data.access_token,
+      refresh_token: response.data.refresh_token || refresh_token
+    });
+  } catch (error: any) {
+    console.error('Erreur lors du rafraîchissement du token:', error.response?.data || error.message);
+    const statusCode = error.response?.status || 500;
+    res.status(statusCode).json({ 
+      error: 'Impossible de rafraîchir le token' 
     });
   }
 });

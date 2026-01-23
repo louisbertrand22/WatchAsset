@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { refreshAccessToken, clearAuthData } from '@/utils/authUtils';
 
 interface User {
   email: string;
@@ -23,7 +24,7 @@ export default function SettingsContent() {
   const [error, setError] = useState<string | null>(null);
 
   // Function to fetch user information from backend API (which uses SSOService)
-  const fetchUserInfo = async (accessToken: string) => {
+  const fetchUserInfo = async (accessToken: string, isRetry: boolean = false) => {
     try {
       const response = await fetch(`${BACKEND_URL}/auth/userinfo`, {
         headers: {
@@ -32,6 +33,15 @@ export default function SettingsContent() {
       });
 
       if (!response.ok) {
+        // If 401 and we haven't retried yet, try refreshing the token
+        if (response.status === 401 && !isRetry) {
+          console.log('Token expired, attempting to refresh...');
+          const newToken = await refreshAccessToken();
+          if (newToken) {
+            // Retry with the new token
+            return await fetchUserInfo(newToken, true);
+          }
+        }
         throw new Error(`Failed to fetch user information: ${response.status} ${response.statusText}`);
       }
 
@@ -64,8 +74,7 @@ export default function SettingsContent() {
             setLoading(false);
           } catch (e) {
             console.error('Token is invalid or expired:', e);
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('user');
+            clearAuthData();
             router.push('/');
           }
         } else {
@@ -82,8 +91,7 @@ export default function SettingsContent() {
   }, [router]);
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('user');
+    clearAuthData();
     router.push('/');
   };
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { authenticatedFetch, clearAuthData } from '@/utils/authUtils';
 
 interface Watch {
   id: string;
@@ -88,11 +89,10 @@ export default function AddWatchContent() {
         validatedPrice = parsed;
       }
 
-      const response = await fetch(`${BACKEND_URL}/user-watches`, {
+      const response = await authenticatedFetch(`${BACKEND_URL}/user-watches`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           watchId: selectedWatch,
@@ -117,8 +117,7 @@ export default function AddWatchContent() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('user');
+    clearAuthData();
     router.push('/');
   };
 

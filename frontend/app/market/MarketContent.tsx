@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { clearAuthData } from '@/utils/authUtils';
 
 interface PriceHistory {
   id: string;
@@ -72,8 +73,7 @@ export default function MarketContent() {
   }, [router]);
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('user');
+    clearAuthData();
     router.push('/');
   };
 
