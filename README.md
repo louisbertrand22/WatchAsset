@@ -85,7 +85,7 @@ See `.env.example` for all required environment variables:
 **Backend (.env in project root):**
 - `PORT` - Server port (default: 3001)
 - `FRONTEND_URL` - Frontend URL for redirects (default: http://localhost:3000)
-- `SSO_BASE_URL` - SSO server URL (default: http://localhost:3000)
+- `SSO_BASE_URL` - SSO server URL (default: https://mysso-wq3e.onrender.com)
 - `SSO_CLIENT_ID` - OAuth client ID (default: watch-asset-app)
 - `SSO_CLIENT_SECRET` - OAuth client secret (**required**)
 - `SSO_REDIRECT_URI` - OAuth redirect URI (default: http://localhost:3001/auth/callback)
@@ -94,7 +94,7 @@ See `.env.example` for all required environment variables:
 
 **Frontend (.env in frontend directory):**
 - `NEXT_PUBLIC_BACKEND_URL` - Backend API URL (default: http://localhost:3001)
-- `NEXT_PUBLIC_SSO_BASE_URL` - SSO API URL for fetching user info (default: http://localhost:3000)
+- `NEXT_PUBLIC_SSO_BASE_URL` - SSO API URL for fetching user info (default: https://mysso-wq3e.onrender.com)
 
 ## API Endpoints
 
