@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { refreshAccessToken, clearAuthData } from '@/utils/authUtils';
 
@@ -39,7 +39,7 @@ export default function DashboardContent() {
   const [watchesLoading, setWatchesLoading] = useState<boolean>(false);
 
   // Function to fetch user information from backend API (which uses SSOService)
-  const fetchUserInfo = async (accessToken: string, isRetry: boolean = false) => {
+  const fetchUserInfo = useCallback(async (accessToken: string, isRetry: boolean = false) => {
     try {
       const response = await fetch(`${BACKEND_URL}/auth/userinfo`, {
         headers: {
@@ -78,10 +78,10 @@ export default function DashboardContent() {
       console.error('Error fetching user info from backend:', error);
       throw error;
     }
-  };
+  }, []);
 
   // Function to fetch user's watch collection
-  const fetchUserWatches = async (accessToken: string, isRetry: boolean = false) => {
+  const fetchUserWatches = useCallback(async (accessToken: string, isRetry: boolean = false) => {
     setWatchesLoading(true);
     try {
       const response = await fetch(`${BACKEND_URL}/user-watches`, {
@@ -111,7 +111,7 @@ export default function DashboardContent() {
     } finally {
       setWatchesLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const initializeUser = async () => {
@@ -170,7 +170,7 @@ export default function DashboardContent() {
     };
 
     initializeUser();
-  }, [searchParams, router]);
+  }, [searchParams, router, fetchUserInfo, fetchUserWatches]);
 
   const handleLogout = () => {
     clearAuthData();

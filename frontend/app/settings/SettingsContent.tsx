@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { refreshAccessToken, clearAuthData } from '@/utils/authUtils';
 
@@ -24,7 +24,7 @@ export default function SettingsContent() {
   const [error, setError] = useState<string | null>(null);
 
   // Function to fetch user information from backend API (which uses SSOService)
-  const fetchUserInfo = async (accessToken: string, isRetry: boolean = false) => {
+  const fetchUserInfo = useCallback(async (accessToken: string, isRetry: boolean = false) => {
     try {
       const response = await fetch(`${BACKEND_URL}/auth/userinfo`, {
         headers: {
@@ -61,7 +61,7 @@ export default function SettingsContent() {
       console.error('Error fetching user info from backend:', error);
       throw error;
     }
-  };
+  }, []);
 
   useEffect(() => {
     const initializeUser = async () => {
@@ -88,7 +88,7 @@ export default function SettingsContent() {
     };
 
     initializeUser();
-  }, [router]);
+  }, [router, fetchUserInfo]);
 
   const handleLogout = () => {
     clearAuthData();
