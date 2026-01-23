@@ -42,7 +42,7 @@ export default function SettingsContent() {
         email: userData.email,
         name: userData.name || userData.username || userData.email,
         id: userData.sub || userData.id,
-        username: userData.username,
+        username: userData.preferred_username,
       };
 
       setUser(mappedUser);

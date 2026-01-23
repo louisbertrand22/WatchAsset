@@ -57,7 +57,7 @@ export default function DashboardContent() {
         email: userData.email,
         name: userData.name || userData.username || userData.email,
         id: userData.sub || userData.id,
-        username: userData.username,
+        username: userData.preferred_username,
       };
 
       setUser(mappedUser);
@@ -235,23 +235,18 @@ export default function DashboardContent() {
                 {/* Avatar */}
                 <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-4 border-white/30">
                   <span className="text-3xl font-bold text-white">
-                    {getInitials(user.name)}
+                    {user.username ? getInitials(user.username) : getInitials(user.name)}
                   </span>
                 </div>
                 
                 {/* User Info */}
                 <div className="text-white">
                   <h2 className="text-3xl font-bold mb-2">
-                    Bienvenue, {user.name}!
+                    Bienvenue, {user.username} !
                   </h2>
                   <p className="text-blue-100 text-lg">
                     {user.email}
                   </p>
-                  {user.username && (
-                    <p className="text-blue-100/90 text-sm mt-1">
-                      @{user.username}
-                    </p>
-                  )}
                   <p className="text-blue-100/80 text-sm mt-1">
                     ID: {String(user.id || '').substring(0, 8)}...
                   </p>
